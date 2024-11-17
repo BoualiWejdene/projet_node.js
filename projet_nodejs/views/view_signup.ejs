@@ -1,24 +1,121 @@
 <%- include('partials/header') %>
-    <center>
-    <h1>Créer un compte</h1>
-    <div>
-        <form action="/users" method="POST">
-            <input type="text" name="nom_user" placeholder="Nom" required><br>
-            <input type="text" name="prenom_user" placeholder="Prenom" required><br>
-            <input type="number" name="age" placeholder="Age" required><br>
-            <input type="photo" name="photo" placeholder="url photo" required><br>
-            <input type="text" name="region" placeholder="Région" required><br>
-            <input type="email" name="email" placeholder="E-amil" required><br>
-            <input type="password" name="mot_de_passe" placeholder="Mot de passe" required><br>
-            Genre: <input type="radio" name="genre" value="homme">Homme
-            <input type="radio" name="genre" value="femme">Femme<br>
-            Vous Residez En Tunisie ? : 
-            <input type="radio" name="ResiderEnTunisie" value="true">Oui
-            <input type="radio" name="ResiderEnTunisie" value="false">Non<br>
-            <br>
-            <button type="submit">Valider</button>
-        
-        </form>
-    </div>
-</center>
+<style>
+    body {
+        font-family: 'Poppins', sans-serif;
+        background: url('https://static.vecteezy.com/system/resources/previews/022/737/904/non_2x/modern-city-scape-silhouette-simple-minimalist-blue-city-skyline-background-urban-cityscape-silhouettes-illustration-vector.jpg') no-repeat center center fixed;
+        background-size: cover;
+        color: #fff;
+        min-height: 100vh;
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    .form-container {
+        max-width: 450px;
+        background: rgba(0, 0, 0, 0.6);
+        border-radius: 20px;
+        box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.3);
+        padding: 30px;
+        color: #fff;
+    }
+    h1 {
+        text-align: center;
+        color: #fff;
+        margin-bottom: 30px;
+    }
+    .form-control {
+        border-radius: 10px;
+        padding: 10px;
+        margin-bottom: 15px;
+        border: none;
+    }
+    .form-control:focus {
+        border-color: #FFD700;
+        box-shadow: 0 0 10px rgba(255, 215, 0, 0.7);
+    }
+    .btn-primary {
+        background-color: #3e74a9;
+        border: none;
+        padding: 12px;
+        border-radius: 50px;
+        width: 100%;
+        font-size: 16px;
+        transition: 0.3s;
+    }
+    .btn-primary:hover {
+        background-color: #218838;
+        transform: translateY(-3px);
+    }
+    .form-check-label {
+        color: #fff;
+    }
+    .custom-radio .form-check-input:checked {
+        background-color: #FFD700;
+        border-color: #FFD700;
+    }
+    .cursor-custom {
+        cursor: url('https://www.rw-designer.com/cursor-extern.php?id=24835') , auto;
+    }
+</style>
+<div class="form-container cursor-custom">
+    <h1>Créer votre compte</h1>
+    <form action="/users" method="POST">
+        <!-- Nom -->
+        <div class="mb-3">
+            <label for="nom" class="form-label">Nom</label>
+            <input type="text" class="form-control" id="nom" name="nom_user" required placeholder="Entrez votre nom">
+        </div>
+        <!-- Prénom -->
+        <div class="mb-3">
+            <label for="prenom" class="form-label">Prénom</label>
+            <input type="text" class="form-control" id="prenom" name="prenom_user" required placeholder="Entrez votre prénom">
+        </div>
+        <!-- Email -->
+        <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <input type="email" class="form-control" id="email" name="email" required placeholder="Entrez votre email">
+        </div>
+        <!-- Mot de passe -->
+        <div class="mb-3">
+            <label for="mot_de_passe" class="form-label">Mot de passe</label>
+            <input type="password" class="form-control" id="mot_de_passe" name="mot_de_passe" required placeholder="Entrez votre mot de passe">
+        </div>
+        <!-- Date de naissance -->
+        <div class="mb-3">
+            <label for="age" class="form-label">Age</label>
+            <input type="number" class="form-control" id="age" name="age" required>
+        </div>
+        <div class="mb-3">
+            <label for="photo" class="form-label">Photo</label>
+            <input type="text" class="form-control" id="prenom" name="photo" required >
+        </div>
+        <!-- Genre -->
+        <div class="mb-3">
+            <label class="form-label">Genre</label>
+            <div class="form-check form-check-inline">
+                <input type="radio" class="form-check-input" id="homme" name="genre" value="homme" required>
+                <label class="form-check-label" for="homme">Homme</label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input type="radio" class="form-check-input" id="femme" name="genre" value="femme" required>
+                <label class="form-check-label" for="femme">Femme</label>
+            </div>
+        </div>
+        <!-- Résidence -->
+        <div class="mb-3">
+            <label class="form-label">Résidez-vous en Tunisie ?</label>
+            <div class="form-check form-check-inline">
+                <input type="radio" class="form-check-input" id="reside_oui" name="ResiderEnTunisie" value="oui" required>
+                <label class="form-check-label" for="reside_oui">Oui</label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input type="radio" class="form-check-input" id="reside_non" name="ResiderEnTunisie" value="non" required>
+                <label class="form-check-label" for="reside_non">Non</label>
+            </div>
+        </div>
+        <!-- Bouton de soumission -->
+        <button type="submit" class="btn btn-primary">S'inscrire</button>
+    </form>
+</div>
 <%- include('partials/footer') %>

@@ -26,7 +26,7 @@ app.post("/users" , async(req,res)=>{
         photo:req.body.photo,region:req.body.region,email:req.body.email,mot_de_passe:req.body.mot_de_passe,
         genre:req.body.genre,ResiderEnTunisie:req.body.ResiderEnTunisie}
     await db.collection("Utilisateurs").insertOne(newUser);
-    res.redirect("/users");
+    res.redirect("/login");
 })
 
 // get Users

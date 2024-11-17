@@ -1,68 +1,98 @@
+<%- include('partials/header') %>
 <style>
     body {
-    font-family: Arial, sans-serif;
-    background-color: #f9f9f9;
-    margin: 0;
-    padding: 20px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-}
+        font-family: Arial, sans-serif;
+        background-color: #f9f9f9;
+        margin: 0;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+    }
 
-.candidate-container {
-    background-color: white;
-    border: 1px solid #ddd;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    width: 400px;
-    padding: 20px;
-    text-align: center;
-}
+    .alert {
+        position: absolute;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 1000;
+        width: 90%;
+        max-width: 600px;
+    }
 
-.candidate-container img {
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    margin-bottom: 10px;
-}
+    .candidate-container {
+        background-color: white;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        width: 400px;
+        padding: 20px;
+        text-align: center;
+    }
 
-.candidate-container h3 {
-    margin: 10px 0 5px;
-    color: #333;
-}
+    .candidate-container img {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        margin-bottom: 10px;
+    }
 
-.candidate-container p {
-    color: #555;
-    font-size: 14px;
-    margin: 5px 0;
-}
+    .candidate-container h3 {
+        margin: 10px 0 5px;
+        color: #333;
+    }
 
-.candidate-container button {
-    background-color: #007bff;
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 14px;
-    margin-top: 10px;
-}
+    .candidate-container p {
+        color: #555;
+        font-size: 14px;
+        margin: 5px 0;
+    }
 
-.candidate-container button:hover {
-    background-color: #0056b3;
-}
+    .candidate-container button {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 14px;
+        margin-top: 10px;
+    }
 
+    .candidate-container button:hover {
+        background-color: #0056b3;
+    }
 </style>
+
+
 <body>
+
+    <% if (alertMessage) { %>
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        <%= alertMessage %>
+        <button type="button" class="btn-close btn-close-warning" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    <% } %>
+
+    <!-- Contenu de la carte candidat -->
     <div class="candidate-container">
         <img src="<%= candidat.photo %>" alt="Photo de <%= candidat.nom_candidat %>">
         <h3><%= candidat.nom_candidat %> <%= candidat.prenom_candidat %> </h3>
         <p><%= candidat.bioagraphie %></p>
-        <p><strong> De la parti</strong> : <%= candidat.parti %></p>
-        <p><strong>Programme</strong>  : <%= candidat.programme %></p>
+        <p><strong>De la parti</strong>: <%= candidat.parti %></p>
+        <p><strong>Programme</strong>: <%= candidat.programme %></p>
         <p><%= candidat.nbVotes %> votes</p>
-      
-            <button onclick="window.history.back()" class="back-button">Retour</button>
+
+        <!-- Formulaire pour voter pour ce candidat -->
+        <form action="/vote/<%= candidat._id %>" method="POST">
+            <input type="hidden" name="userId" value="<%= user._id %>">
+            <button type="submit">Voter pour ce candidat</button>
+        </form>
+
+        <!-- Bouton pour revenir au profil de l'utilisateur -->
+        <button onclick="window.location.href='/profile/<%= user._id %>'" class="back-button">Retour</button>
     </div>
 </body>
+<%- include('partials/footer') %>

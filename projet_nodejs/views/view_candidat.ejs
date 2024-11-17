@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div>
+        <ul>
+            <% candidats.forEach(Candidat => { %>
+                <li><img src="<%= Candidat.photo %>" width="50" height="50"><br> <%= Candidat.nom_candidat %> <%= Candidat.prenom_candidat %> <br> Parti : <%= Candidat.parti %><br>
+                    Bio : <%= Candidat.bioagraphie %><br>
+                    Programme : <%= Candidat.programme %><br> 
+                    Nombre de votes: <%= Candidat.nbVotes %></li>
+
+            <% }); %>
+        </ul>
+    </div>
+</body>
+</html>

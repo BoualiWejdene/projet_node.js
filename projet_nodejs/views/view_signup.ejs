@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <center>
+    <h1>Créer un compte</h1>
+    <div>
+        <form action="/users" method="POST">
+            <input type="text" name="nom_user" placeholder="Nom" required><br>
+            <input type="text" name="prenom_user" placeholder="Prenom" required><br>
+            <input type="number" name="age" placeholder="Age" required><br>
+            <input type="photo" name="photo" placeholder="url photo" required><br>
+            <input type="text" name="region" placeholder="Région" required><br>
+            <input type="email" name="email" placeholder="E-amil" required><br>
+            <input type="password" name="mot_de_passe" placeholder="Mot de passe" required><br>
+            Genre: <input type="radio" name="genre" value="homme">Homme
+            <input type="radio" name="genre" value="femme">Femme<br>
+            Vous Residez En Tunisie ? : 
+            <input type="radio" name="ResiderEnTunisie" value="true">Oui
+            <input type="radio" name="ResiderEnTunisie" value="false">Non<br>
+            <br>
+            <button type="submit">Valider</button>
+        
+        </form>
+    </div>
+</center>
+</body>
+</html>

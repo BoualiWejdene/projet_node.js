@@ -15,11 +15,12 @@ MongoClient.connect(url)
 })
 .catch(err => {console.error(error)});
 
+// signup
 app.get("/signup",async(req,res)=>{
     res.render("view_signup");
 })
 
-
+// ajouter user
 app.post("/users" , async(req,res)=>{
     const newUser = {nom_user:req.body.nom_user ,prenom_user:req.body.prenom_user ,age:req.body.age,
         photo:req.body.photo,region:req.body.region,email:req.body.email,mot_de_passe:req.body.mot_de_passe,
@@ -28,14 +29,18 @@ app.post("/users" , async(req,res)=>{
     res.redirect("/users");
 })
 
+// get Users
 app.get('/users',async(req,res)=>{
     const utilisateurs =await db.collection('Utilisateurs').find().toArray();
     console.log(utilisateurs);
     res.render('view_user',{utilisateurs});
 })
+
+// login
 app.get("/login", (req, res) => {
     res.render("login"); 
   });
+
 app.post("/login", async (req, res) => {
     try {
         const { email, mot_de_passe } = req.body;
@@ -55,16 +60,11 @@ app.post("/login", async (req, res) => {
     }
   });
 
-
+// get candidats
 app.get('/candidats',async(req,res)=>{
     const candidats =await db.collection('Candidat').find().toArray();
     console.log(candidats);
     res.render('view_candidat',{candidats});
 })
-
-
-
-
-
 
 app.listen(4000)

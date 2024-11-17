@@ -1,4 +1,4 @@
-const { MongoClient } = require("mongodb");
+const { MongoClient,ObjectId  } = require("mongodb");
 const express=require("express")
 const app = express();
 
@@ -52,7 +52,7 @@ app.post("/login", async (req, res) => {
         if (user.mot_de_passe !== mot_de_passe) {
         return res.status(400).send("Mot de passe incorrect");
       }
-      res.redirect("/users");
+      res.redirect(`/profile/${user._id}`);
       
     } catch (err) {
       console.error("Erreur lors de la connexion :", err);
@@ -66,5 +66,38 @@ app.get('/candidats',async(req,res)=>{
     console.log(candidats);
     res.render('view_candidat',{candidats});
 })
+// get candidat by id
+app.get('/candidat/:id', async (req, res) => {
+  try {
+    const candidatId = req.params.id;
+    const candidat = await db.collection("Candidat").findOne({ _id: new ObjectId(candidatId) });
 
+    if (!candidat) {
+      return res.status(404).send("Candidat non trouvé");
+    }
+
+    res.render('view_candidat_profile', { candidat });
+
+  } catch (err) {
+    console.error("Erreur lors de la récupération du profil du candidat :", err);
+    res.status(500).send("Erreur serveur.");
+  }
+});
+
+app.get('/profile/:id', async (req, res) => {
+  try {
+    const userId = req.params.id; // Récupère l'ID de l'utilisateur dans l'URL
+    const user = await db.collection("Utilisateurs").findOne({ _id: new ObjectId(userId) });
+    console.log(user)
+    if (!user) {
+      return res.status(404).send("Utilisateur non trouvé");
+    }
+    const candidats = await db.collection("Candidat").find().toArray();
+    // Afficher le profil de l'utilisateur
+    res.render('view_profile', { user, candidats});
+  } catch (err) {
+    console.error("Erreur lors de la récupération du profil :", err);
+    res.status(500).send("Erreur serveur.");
+  }
+});
 app.listen(4000)

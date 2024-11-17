@@ -1,0 +1,68 @@
+<style>
+    body {
+    font-family: Arial, sans-serif;
+    background-color: #f9f9f9;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.candidate-container {
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 400px;
+    padding: 20px;
+    text-align: center;
+}
+
+.candidate-container img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    margin-bottom: 10px;
+}
+
+.candidate-container h3 {
+    margin: 10px 0 5px;
+    color: #333;
+}
+
+.candidate-container p {
+    color: #555;
+    font-size: 14px;
+    margin: 5px 0;
+}
+
+.candidate-container button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-top: 10px;
+}
+
+.candidate-container button:hover {
+    background-color: #0056b3;
+}
+
+</style>
+<body>
+    <div class="candidate-container">
+        <img src="<%= candidat.photo %>" alt="Photo de <%= candidat.nom_candidat %>">
+        <h3><%= candidat.nom_candidat %> <%= candidat.prenom_candidat %> </h3>
+        <p><%= candidat.bioagraphie %></p>
+        <p><strong> De la parti</strong> : <%= candidat.parti %></p>
+        <p><strong>Programme</strong>  : <%= candidat.programme %></p>
+        <p><%= candidat.nbVotes %> votes</p>
+      
+            <button onclick="window.history.back()" class="back-button">Retour</button>
+    </div>
+</body>

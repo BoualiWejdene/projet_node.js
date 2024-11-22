@@ -177,6 +177,122 @@ app.post('/vote/:id', async (req, res) => {
   }
 });
 
+// Ajouter candidat à la liste des favoris 
+app.post('/favori/:id', async (req, res) => {
+    try {
+        const candidatId = req.params.id;
+        const userId = req.session.userId;
+
+        if (!ObjectId.isValid(candidatId)) {
+            return res.status(400).send("ID du candidat invalide");
+        }
+
+        const user = await db.collection("Utilisateurs").findOne({ _id: new ObjectId(userId) });
+        if (!user) {
+            return res.status(404).send("Utilisateur non trouvé");
+        }
+
+        const isFavori = user.favoris && user.favoris.includes(candidatId);
+
+        if (isFavori) {
+            // Supprimer des favoris
+            await db.collection("Utilisateurs").updateOne(
+                { _id: new ObjectId(userId) },
+                { $pull: { favoris: candidatId } }
+            );
+        } else {
+            // Ajouter aux favoris
+            await db.collection("Utilisateurs").updateOne(
+                { _id: new ObjectId(userId) },
+                { $addToSet: { favoris: candidatId } }
+            );
+        }
+
+        // Redirection vers la liste des favoris après mise à jour
+        res.redirect(`/profile/${userId}/favoris`);
+    } catch (err) {
+        console.error("Erreur lors de la mise à jour des favoris :", err);
+        res.status(500).send("Erreur serveur.");
+    }
+});
+
+
+
+  
+//liste des candidats
+app.get('/profile/:id/favoris', async (req, res) => {
+    try {
+        const userId = req.params.id;
+
+        if (!ObjectId.isValid(userId)) {
+            return res.status(400).send("ID utilisateur invalide.");
+        }
+
+        const user = await db.collection("Utilisateurs").findOne({ _id: new ObjectId(userId) });
+        if (!user || !user.favoris) {
+            return res.status(404).send("Favoris introuvables.");
+        }
+
+        // Récupérez les informations des candidats favoris
+        const favoris = await db.collection("Candidat")
+            .find({ _id: { $in: user.favoris.map(id => new ObjectId(id)) } })
+            .toArray();
+
+        res.render('view_favoris', { favoris });
+    } catch (err) {
+        console.error("Erreur lors de la récupération des favoris :", err);
+        res.status(500).send("Erreur serveur.");
+    }
+});
+
+// Route pour afficher le formulaire de modification du profil
+app.get('/edit-profile/:id', async (req, res) => {
+    try {
+        const userId = req.params.id;
+        const user = await db.collection("Utilisateurs").findOne({ _id: new ObjectId(userId) });
+
+        if (!user) {
+            return res.status(404).send("Utilisateur non trouvé");
+        }
+
+      // Afficher la vue de modification de profil
+      res.render('view_edit_profile', { user });
+    } catch (err) {
+        console.error("Erreur lors de l'affichage du profil :", err);
+        res.status(500).send("Erreur serveur.");
+    }
+});
+
+// Route pour mettre à jour le profil
+app.post('/profile/update/:id', async (req, res) => {
+    try {
+        const userId = req.params.id;
+        const updatedData = {
+            nom_user: req.body.nom_user,
+            prenom_user: req.body.prenom_user,
+            age: req.body.age,
+            photo: req.body.photo,
+            region: req.body.region,
+            email: req.body.email,
+            genre: req.body.genre,
+            ResiderEnTunisie: req.body.ResiderEnTunisie
+        };
+
+        const result = await db.collection("Utilisateurs").updateOne(
+            { _id: new ObjectId(userId) },
+            { $set: updatedData }
+        );
+
+        if (result.modifiedCount === 0) {
+            return res.status(400).send("Aucune modification effectuée.");
+        }
+
+        res.redirect(`/profile/${userId}`); // Rediriger vers la page de profil mise à jour
+    } catch (err) {
+        console.error("Erreur lors de la mise à jour du profil :", err);
+        res.status(500).send("Erreur serveur.");
+    }
+});
 
 app.listen(4000, () => {
   console.log("Server running on port 4000");

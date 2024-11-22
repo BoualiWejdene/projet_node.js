@@ -92,7 +92,33 @@
     .card a button:hover {
         background-color: #1e7e34;
     }
+    /* Icône cœur */
+.favorite-btn {
+    background: pink !important;
+    margin-left: 85px;
+    width: 90px;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    outline: none;
     
+}
+
+/* Cœur vide */
+.icon-heart .heart-filled {
+    display: none; /* Par défaut, le cœur rempli est masqué */
+}
+
+/* Cœur rempli lorsqu'il est favori */
+.favorite-btn.active .heart-filled {
+    display: inline;
+}
+
+.favorite-btn.active .heart-outline {
+    display: none; /* Masque le cœur vide */
+    
+}
+
 </style>
 <%- include('partials/header') %>
 <body>
@@ -101,6 +127,11 @@
         <img src="<%= user.photo %>" width="100" height="100">
         <h1><%= user.nom_user %> <%= user.prenom_user %></h1>
         <p><%= user.age %> ans</p>
+
+         <!-- Ajout du bouton de modification du profil -->
+         <form action="/edit-profile/<%= user._id %>" method="GET">
+            <button type="submit" class="btn btn-primary">Modifier le profil</button>
+        </form>
     </div>
 
     <div class="candidates">
@@ -111,8 +142,18 @@
                 <p><strong>Parti</strong> : <%= Candidat.parti %></p>
                 <p><strong>Nombre de votes</strong>  : <%= Candidat.nbVotes %></p>
                 <!-- <button type="button" >Voter</button> -->
-                
-               
+        <!-- Bouton cœur pour ajouter aux favoris -->
+    <button class="favorite-btn <%= user.favoris.includes(Candidat._id.toString()) ? 'active' : '' %>" 
+        data-id="<%= Candidat._id %>" 
+        aria-label="Ajouter aux favoris">
+    <svg class="icon-heart" viewBox="0 0 24 24" width="24" height="24">
+        <path class="heart-outline" fill="none" stroke="black" stroke-width="2"
+              d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path>
+        <path class="heart-filled" fill="red" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path>
+    </svg>
+</button>
+
+    
                 <a href="/candidat/<%= Candidat._id %>">
                     <button type="button">Consulter</button>
                 </a>
@@ -120,6 +161,58 @@
         <% }); %>
     </div>
 </div>
+<script>
+  const favoriteButtons = document.querySelectorAll('.favorite-btn');
+
+favoriteButtons.forEach(button => {
+    button.addEventListener('click', async (event) => {
+        const candidatId = button.dataset.id;
+
+        try {
+            const response = await fetch(`/favori/${candidatId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (response.ok) {
+                button.classList.toggle('active'); // Toggle l'état du bouton
+            } else {
+                console.error('Erreur lors de la mise à jour des favoris');
+            }
+        } catch (err) {
+            console.error('Erreur lors de la requête au serveur :', err);
+        }
+    });
+});
+document.querySelectorAll(".favori-btn").forEach(btn => {
+    btn.addEventListener("click", async () => {
+        const candidatId = btn.dataset.candidatId;
+
+        const response = await fetch(`/favori/${candidatId}`, {
+            method: "POST",
+        });
+
+        if (response.ok) {
+            // Mettre à jour la liste des favoris dynamiquement
+            const updatedFavoris = await response.json();
+            renderFavoris(updatedFavoris);
+        } else {
+            console.error("Erreur lors de la mise à jour des favoris");
+        }
+    });
+});
+
+function renderFavoris(favoris) {
+    const favorisContainer = document.querySelector("#favoris-container");
+    favorisContainer.innerHTML = favoris.map(fav => `
+        <div>${fav.nom_candidat} ${fav.prenom_candidat}</div>
+    `).join("");
+}
+
+
+</script>
 </body>
 <%- include('partials/footer') %>
 

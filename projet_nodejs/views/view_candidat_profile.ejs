@@ -64,6 +64,20 @@
     .candidate-container button:hover {
         background-color: #0056b3;
     }
+
+    .btn-success:hover {
+        background-color: #218838; /* Couleur de fond plus sombre au survol */
+        transform: scale(1.05); /* Légère animation d'agrandissement */
+    }
+
+    .btn-success:active {
+        background-color: #1e7e34; /* Couleur de fond lors du clic */
+        transform: scale(1); /* Réduction de l'effet d'agrandissement */
+    }
+
+    .btn{
+        margin-left: 90px;
+    }
 </style>
 
 
@@ -86,10 +100,13 @@
         <p><%= candidat.nbVotes %> votes</p>
 
         <!-- Formulaire pour voter pour ce candidat -->
-        <form action="/vote/<%= candidat._id %>" method="POST">
-            <input type="hidden" name="userId" value="<%= user._id %>">
-            <button type="submit">Voter pour ce candidat</button>
-        </form>
+<form action="/vote/<%= candidat._id %>" method="POST">
+    <input type="hidden" name="userId" value="<%= user._id %>">
+    <button type="submit" class="btn btn-success d-flex align-items-center gap-2">
+        <i class="bi bi-hand-thumbs-up"></i> Voter pour ce candidat
+    </button>
+</form>
+
 
         <!-- Bouton pour revenir au profil de l'utilisateur -->
         <button onclick="window.location.href='/profile/<%= user._id %>'" class="back-button">Retour</button>

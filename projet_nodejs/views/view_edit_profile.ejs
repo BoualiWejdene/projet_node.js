@@ -1,0 +1,61 @@
+<%- include('partials/header') %>
+<form action="/profile/update/<%= user._id %>" method="POST">
+    <div class="container mt-5">
+        <h2 class="text-center mb-4">Modifier le Profil</h2>
+
+        <!-- Champ Nom -->
+        <div class="form-group">
+            <label for="nom_user">Nom :</label>
+            <input type="text" class="form-control" name="nom_user" value="<%= user.nom_user %>" required>
+        </div>
+
+        <!-- Champ Prénom -->
+        <div class="form-group">
+            <label for="prenom_user">Prénom :</label>
+            <input type="text" class="form-control" name="prenom_user" value="<%= user.prenom_user %>" required>
+        </div>
+
+        <!-- Champ Âge -->
+        <div class="form-group">
+            <label for="age">Âge :</label>
+            <input type="number" class="form-control" name="age" value="<%= user.age %>" required>
+        </div>
+
+        <!-- Champ Photo -->
+        <div class="form-group">
+            <label for="photo">Photo :</label>
+            <input type="text" class="form-control" name="photo" value="<%= user.photo %>">
+        </div>
+
+        <!-- Champ Région -->
+        <div class="form-group">
+            <label for="region">Région :</label>
+            <input type="text" class="form-control" name="region" value="<%= user.region %>" required>
+        </div>
+
+        <!-- Champ Email -->
+        <div class="form-group">
+            <label for="email">Email :</label>
+            <input type="email" class="form-control" name="email" value="<%= user.email %>" required>
+        </div>
+
+        <!-- Champ Genre -->
+        <div class="form-group">
+            <label for="genre">Genre :</label>
+            <input type="text" class="form-control" name="genre" value="<%= user.genre %>" required>
+        </div>
+
+        <!-- Champ Résidence en Tunisie -->
+        <div class="form-group">
+            <label for="ResiderEnTunisie">Réside en Tunisie :</label>
+            <input type="text" class="form-control" name="ResiderEnTunisie" value="<%= user.ResiderEnTunisie %>" required>
+        </div>
+
+        <!-- Bouton de soumission -->
+        <div class="form-group text-center mt-4">
+            <button type="submit" class="btn btn-primary btn-lg">Mettre à jour</button>
+        </div>
+    </div>
+</form>
+
+<%- include('partials/footer') %>

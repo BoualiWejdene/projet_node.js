@@ -1,0 +1,35 @@
+<%- include('partials/header') %>
+<h2>Résultats des élections</h2>
+<div id="resultats">
+  <% candidats.forEach(candidat => { %>
+    <div id="candidat_<%= candidat._id %>">
+      <strong><%= candidat.nom_candidat %> <%= candidat.prenom_candidat %></strong> : <%= candidat.nbVotes %> votes
+    </div>
+  <% }) %>
+</div>
+
+<!-- Charger le script socket.io.js -->
+<script src="http://localhost:4000/socket.io/socket.io.js"></script>
+
+
+<script>
+  // Connexion à Socket.IO
+  const socket = io();
+
+  // Ecouter l'événement 'resultats_update' pour recevoir les résultats mis à jour
+  socket.on('resultats_update', (data) => {
+    // Vider la liste actuelle des résultats
+    const resultatsDiv = document.getElementById('resultats');
+    resultatsDiv.innerHTML = '';
+
+    // Ajouter les nouveaux résultats
+    data.candidats.forEach(candidat => {
+      const candidatDiv = document.createElement('div');
+      candidatDiv.id = 'candidat_' + candidat._id;
+      candidatDiv.innerHTML = `<strong>${candidat.nom_candidat} ${candidat.prenom_candidat}</strong> : ${candidat.nbVotes} votes`;
+      resultatsDiv.appendChild(candidatDiv);
+    });
+  });
+</script>
+
+<%- include('partials/footer') %>

@@ -4,6 +4,8 @@
         background-color: #f9f9f9;
         margin: 0;
         padding: 0;
+        background-size: cover;
+        height: 100vh;
     }
     
     header, footer {
@@ -14,9 +16,11 @@
     }
     
     .container {
-        width: 90%;
+        width: 70%;
         max-width: 1200px;
         margin: 20px auto;
+        border-radius: 10px;
+
     }
     
     h1 {
@@ -42,7 +46,7 @@
     }
     
     .card {
-        background-color: white;
+        background-color: rgba(255, 255, 255, 0.842);
         border: 1px solid #ddd;
         border-radius: 10px;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -118,12 +122,28 @@
     display: none; /* Masque le cœur vide */
     
 }
+.right{
+    float: right;
+    margin-right: 20px;
+}
+.formControl{
+    border: 1px solid #007bff;
+    border-radius: 10px;
+    height: 38px;
+    width: 240px;
+}
 
 </style>
 <%- include('partials/header') %>
 <body>
+    <!-- Bouton déconnexion -->
+    <form action="/logout" method="GET" > 
+        <button type="submit" class="btn btn-danger right" ><i class="fa-solid fa-right-from-bracket"></i></button>
+    </form>
 <div class="container">
+    
     <div class="user-info">
+       <!-- Information de l'utilisateur -->
         <img src="<%= user.photo %>" width="100" height="100">
         <h1><%= user.nom_user %> <%= user.prenom_user %></h1>
         <p><%= user.age %> ans</p>
@@ -132,8 +152,27 @@
          <form action="/edit-profile/<%= user._id %>" method="GET">
             <button type="submit" class="btn btn-primary">Modifier le profil</button>
         </form>
+  <!-- Recherche par nom ou par parti -->
+  <form method="GET" action="/profile/<%= user._id %>">
+            
+    <div class="input-group" style="width: 900px">
+        <label style="margin-right: 10px;margin-top: 7px;margin-left: 250px;">Rechercher un condidat :  </label>
+        <div class="col-sm-4">
+            <input 
+                type="text" 
+                name="search" 
+                placeholder="Tapez le nom ou la parti" 
+                value="<%= searchQuery %>" 
+                class="form-control">
+        </div>               <div class="input-group-prepend">
+           <button type="submit" class="btn btn-primary" style="padding:10px ;"><i class="fa-solid fa-magnifying-glass"></i></button>
+       </div>
+     </div>
+</form>
+      
     </div>
-
+    
+    <!-- Affichage des candidats -->
     <div class="candidates">
         <% candidats.forEach(Candidat => { %>
             <div class="card">

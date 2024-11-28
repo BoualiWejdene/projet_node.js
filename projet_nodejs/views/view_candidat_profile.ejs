@@ -10,6 +10,9 @@
         justify-content: center;
         align-items: center;
         min-height: 100vh;
+        background: url("/image.png") no-repeat center center;
+        background-size: cover;
+        height: 100vh;
     }
 
     .alert {
@@ -21,17 +24,37 @@
         width: 90%;
         max-width: 600px;
     }
-
+    #container {
+    display: flex; /* Utilise Flexbox pour aligner les éléments horizontalement */
+    gap: 20px; /* Ajoute un espacement entre les deux sections */
+    margin-top: 20px; /* Ajoute un peu d'espace au-dessus */
+  }
+  #commentList {
+    flex: 1; /* Prend 2 parts de l'espace disponible */
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #ffffff;
+  }
     .candidate-container {
         background-color: white;
         border: 1px solid #ddd;
         border-radius: 10px;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        width: 400px;
+        width: 500px;
         padding: 20px;
         text-align: center;
+        flex: 1;
+    }
+    @media (max-width: 768px) {
+    #container {
+      flex-direction: column; /* Aligne verticalement les sections */
     }
 
+    .candidate-container, #commentList {
+      max-width: 100%; /* Prend toute la largeur sur petits écrans */
+    }
+  }
     .candidate-container img {
         width: 100px;
         height: 100px;
@@ -91,6 +114,7 @@
     <% } %>
 
     <!-- Contenu de la carte candidat -->
+     <div id="container">
     <div class="candidate-container">
         <img src="<%= candidat.photo %>" alt="Photo de <%= candidat.nom_candidat %>">
         <h3><%= candidat.nom_candidat %> <%= candidat.prenom_candidat %> </h3>
@@ -99,18 +123,79 @@
         <p><strong>Programme</strong>: <%= candidat.programme %></p>
         <p><%= candidat.nbVotes %> votes</p>
 
+      
         <!-- Formulaire pour voter pour ce candidat -->
-<form action="/vote/<%= candidat._id %>" method="POST">
-    <input type="hidden" name="userId" value="<%= user._id %>">
-    <button type="submit" class="btn btn-success d-flex align-items-center gap-2">
-        <i class="bi bi-hand-thumbs-up"></i> Voter pour ce candidat
-    </button>
-</form>
-
+        <form action="/vote/<%= candidat._id %>" method="POST">
+            <input type="hidden" name="userId" value="<%= user._id %>">
+            <button type="submit" class="btn btn-success d-flex align-items-center gap-2">
+                <i class="bi bi-hand-thumbs-up"></i> Voter pour ce candidat
+            </button>
+        </form>
 
         <!-- Bouton pour revenir au profil de l'utilisateur -->
         <button onclick="window.location.href='/profile/<%= user._id %>'" class="back-button">Retour</button>
+        
+      
     </div>
-    
+    <div id="commentList">
+        <h3>Commentaires</h3>
+        <% commentaires.forEach(commentaire => { %>
+            <p><strong><%= commentaire.userDetails.nom_user %> <%= commentaire.userDetails.prenom_user %>:</strong> <%= commentaire.contenue %></p>
+          <% }); %>
+        <!--<% commentaires.forEach(comment => { %>
+            <p><strong><%= comment.userId %>:</strong> <%= comment.contenue %></p>
+        <% }) %>
+          Formulaire pour Ajouter commentaire -->
+
+         <form action="/comment/<%= candidat._id %>" method="POST">
+            <div class="input-group mb-3">
+                <input type="text" name="contenue" id="contenue" class="form-control" placeholder="Ajouter un commentaire" style="height: 40px;margin-top: 10px;">
+                <div class="input-group-append">
+                    <button type="submit" class="btn btn-primary" style="margin-left: 0px;margin-top: 10px;">
+                        <i class="fa-solid fa-pencil"></i>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+     
+</div>
+    <script>
+        document.getElementById('commentForm').addEventListener('submit', async (e) => {
+    e.preventDefault(); // Empêche le rechargement de la page
+
+    const candidatId = "<%= candidat._id %>"; // Assure-toi que cet ID est disponible côté client
+    const contenue = document.getElementById('contenue').value; // Récupère le contenu du commentaire
+
+    try {
+        const response = await fetch(`/comment/${candidatId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ contenue }) // Envoie le contenu comme JSON
+        });
+
+        const result = await response.json();
+        if (response.ok) {
+            // Ajoute le nouveau commentaire dans la liste
+            const commentList = document.getElementById('commentList');
+            const newComment = document.createElement('p');
+            newComment.innerHTML = `<strong>${result.comment.userId}:</strong> ${result.comment.contenue}`;
+            commentList.appendChild(newComment);
+
+            // Vide le champ d'entrée
+            document.getElementById('contenue').value = '';
+        } else {
+            alert(result.error || "Erreur lors de l'ajout du commentaire");
+        }
+    } catch (err) {
+        console.error("Erreur :", err);
+        alert("Une erreur est survenue. Veuillez réessayer.");
+    }
+});
+
+    </script>
 </body>
+
 <%- include('partials/footer') %>

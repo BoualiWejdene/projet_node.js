@@ -133,15 +133,16 @@
     width: 240px;
 }
 
-#votes{
-    background: beige;
-    width: 400px;
-}
 .form-buttons {
     display: flex;
     justify-content: center; /* Aligne les boutons à gauche */
     gap: 5px; /* Réduit l'espace entre les boutons */
     align-items: center; /* Aligne les boutons verticalement au centre */
+}
+#res{
+    margin-left: 250px;
+    margin-top: 20px;
+    width: 600px;
 }
 </style>
 <%- include('partials/header') %>
@@ -194,7 +195,6 @@
                 <img src="<%= Candidat.photo %>" alt="Photo de <%= Candidat.nom_candidat %>">
                 <h3><%= Candidat.nom_candidat %> <%= Candidat.prenom_candidat %></h3>
                 <p><strong>Parti</strong> : <%= Candidat.parti %></p>
-                <p><strong>Nombre de votes</strong>  : <%= Candidat.nbVotes %></p>
                 <!-- <button type="button" >Voter</button> -->
         <!-- Bouton cœur pour ajouter aux favoris -->
     <button class="favorite-btn <%= user.favoris.includes(Candidat._id.toString()) ? 'active' : '' %>" 
@@ -212,9 +212,12 @@
             </div>
         <% }); %>
     </div>
-    <h3>Les résultats en temps réel</h3>
+    <div class="card" id="res" hidden>
+        <h3 class="text-danger">Les résultats en temps réel</h3>
         <div id="votes">
         </div>
+    </div>
+    
 </div>
 <script>
   const favoriteButtons = document.querySelectorAll('.favorite-btn');
@@ -266,6 +269,7 @@ function renderFavoris(favoris) {
     `).join("");
 }
 function afficherResultat(){
+    document.getElementById("res").hidden=false;
     const socket = io();
 
 socket.on("resultats", (candidats) => {

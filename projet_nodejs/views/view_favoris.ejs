@@ -1,7 +1,7 @@
 <%- include('partials/header') %>
 
 <div class="container mt-5">
-    <h1 class="text-center mb-4">Mes Favoris</h1>
+    <h1 class="text-center mb-4 text-success">Mes Favoris</h1>
     
     <!-- Liste des favoris -->
     <div class="row">
@@ -9,10 +9,10 @@
             <div class="col-md-4 mb-4">
                 <!-- Carte pour chaque favori -->
                 <div class="card">
-                    <img src="<%= favori.photo %>" class="card-img-top"  alt="<%= favori.nom_candidat %>">
+                    <img src="<%= favori.photo %>" class="card-img-top" width="10px"  height="200px" <%= favori.nom_candidat %>">
                     <div class="card-body">
-                        <h5 class="card-title"><%= favori.nom_candidat %> <%= favori.prenom_candidat %></h5>
-                        <p class="card-text"><strong>Parti :</strong> <%= favori.parti %></p>
+                        <p class="card-title text-center text-success"><strong><%= favori.nom_candidat %> <%= favori.prenom_candidat %></strong></p>
+                        <span class="card-text"><strong>Parti :</strong> <%= favori.parti %></span>
                         <p class="card-text"><strong>Biographie :</strong> <%= favori.biographie %></p>
                     </div>
                 </div>

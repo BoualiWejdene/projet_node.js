@@ -137,6 +137,12 @@
     background: beige;
     width: 400px;
 }
+.form-buttons {
+    display: flex;
+    justify-content: center; /* Aligne les boutons à gauche */
+    gap: 5px; /* Réduit l'espace entre les boutons */
+    align-items: center; /* Aligne les boutons verticalement au centre */
+}
 </style>
 <%- include('partials/header') %>
 <body>
@@ -154,9 +160,13 @@
 
          <!-- Ajout du bouton de modification du profil -->
          <form action="/edit-profile/<%= user._id %>" method="GET">
-            <button type="submit" class="btn btn-primary">Modifier le profil</button>
-            <button type="button" class="btn btn-primary" onclick="afficherResultat()">Afficher les résultat</button>
+            <div class="form-buttons">
+                <button type="submit" class="btn btn-primary">Modifier le profil</button>
+                <button type="button" class="btn btn-primary" onclick="afficherResultat()">Afficher les résultats</button>
+                <button type="button" class="btn btn-danger" onclick="window.location.href='/profile/<%= user._id %>/favoris'">Voir la liste des favoris</button>
+            </div>
         </form>
+        
   <!-- Recherche par nom ou par parti -->
   <form method="GET" action="/profile/<%= user._id %>">
             

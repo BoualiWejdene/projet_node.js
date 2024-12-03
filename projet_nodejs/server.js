@@ -1,18 +1,98 @@
-const { MongoClient,ObjectId  } = require("mongodb");
-const express=require("express")
-const app = express();
+const { MongoClient, ObjectId } = require("mongodb");
+const express = require("express");
 const session = require("express-session");
-app.set("view engine","ejs");
 const http = require("http"); // Importer le module HTTP
-const authenticateJWT=require("./middlewares/auth.js")
-const auth = require("./routes/auth.js")
+const authenticateJWT = require("./middlewares/auth.js");
+const auth = require("./routes/auth.js");
 const cookieParser = require('cookie-parser');
+
+const { Server } = require('socket.io');
+
 const socketIo = require('socket.io');
-// Créer un serveur HTTP
+
+const app = express();
+app.set("view engine", "ejs");
+app.use(express.static('public'));
 const server = http.createServer(app);
 
-// Créer une instance de socket.io et la lier au serveur HTTP
-const io = socketIo(server);
+// Connexion à MongoDB
+const mongoose = require("mongoose");
+mongoose.connect('mongodb://localhost:27017/database_name')
+    .then(() => {
+        console.log("Connected to MongoDB");
+    })
+    .catch((err) => {
+        console.log("Error connecting to MongoDB", err);
+    });
+
+// Schéma pour les résultats des élections
+const ResultSchema = new mongoose.Schema({
+    candidate: String,
+    votes: { type: Number, default: 0 }
+});
+
+// Créer un modèle à partir du schéma
+const Result = mongoose.model('Result', ResultSchema);
+
+// Initialiser Socket.IO
+const io = socketIo(server, {
+    cors: {
+        origin: "*",  // Permet toutes les origines pendant le développement
+        methods: ["GET", "POST"]
+    }
+});
+
+// Événement de connexion de Socket.IO
+io.on('connection', (socket) => {
+    console.log('Un utilisateur est connecté');  // Affichage dans la console quand un utilisateur se connecte
+    socket.emit('message', 'Bonjour du serveur!');
+
+    socket.on('disconnect', () => {
+        console.log('Un utilisateur s\'est déconnecté');
+    });
+});
+
+// Servir un fichier HTML pour tester la connexion
+app.get('/test', (req, res) => {
+    res.sendFile(__dirname + '/test.html');
+});
+
+
+app.get('/api/results', async (req, res) => {
+    try {
+        // Récupérer les résultats des votes
+        const results = await Result.find({});
+        res.json(results);
+    } catch (error) {
+        res.status(500).send('Erreur lors de la récupération des résultats');
+    }
+});
+
+io.on('connection', async (socket) => {
+    console.log('Un utilisateur est connecté');
+    
+    // Émettre les résultats initiaux au client
+    socket.emit('results', await Result.find({}));
+
+    // Si un nouveau vote est enregistré, mettre à jour les résultats
+    socket.on('newVote', async (voteData) => {
+        // Ajouter ou mettre à jour les résultats du candidat
+        const result = await Result.findOneAndUpdate(
+            { candidate: voteData.candidate },
+            { $inc: { votes: voteData.votes } },
+            { new: true, upsert: true }  // Crée un nouveau document si ce n'est pas trouvé
+        );
+
+        // Émettre les résultats mis à jour à tous les clients
+        io.emit('results', await Result.find({}));
+    });
+
+    // Lors de la déconnexion d'un client
+    socket.on('disconnect', () => {
+        console.log('Un utilisateur s\'est déconnecté');
+    });
+});
+
 
 //connexion a mongodb
 const url = 'mongodb://127.0.0.1:27017';
@@ -280,15 +360,16 @@ app.post('/vote/:id',async (req, res) => {
       // Enregistrer le vote
       await db.collection("Votes").insertOne({ userId: new ObjectId(userId), candidatId: new ObjectId(candidatId) });
   
-      // Mettre à jour le nombre de votes du candidat
+ 
+  
       await db.collection("Candidat").updateOne(
         { _id: new ObjectId(candidatId) },
         { $inc: { nbVotes: 1 } }
       );
-  
-      // Émettre les résultats en temps réel
+      
+      // Émettre les résultats mis à jour
       const candidats = await db.collection("Candidat").find().toArray();
-      io.emit('resultats', candidats);  // Envoie des résultats à tous les clients
+      io.emit('resultats', candidats);
   
       res.redirect(`/candidat/${candidatId}`);
     } catch (err) {
@@ -450,7 +531,19 @@ app.post('/profile/update/:id', async (req, res) => {
 //       res.status(500).send('Erreur serveur.');
 //     });
 //   });
-
+app.post('/update/:candidate', async (req, res) => {
+    const candidateName = req.params.candidate;
+    const candidate = await Result.findOne({ candidate: candidateName });
+    if (candidate) {
+      candidate.votes += 1;
+      await candidate.save();
+      io.emit('resultsUpdated'); // Informe tous les clients
+      res.send('Mise à jour réussie');
+    } else {
+      res.status(404).send('Candidat non trouvé');
+    }
+  });
+  
 app.post('/comment/:id', async (req, res) => {
     try {
         const candidatId = req.params.id; // L'ID du candidat
@@ -481,11 +574,69 @@ app.post('/comment/:id', async (req, res) => {
         });
     }
 });
+// Connexion au client MongoDB
+MongoClient.connect(url)
+    .then(client => {
+        console.log('Connected to MongoDB');
+        db = client.db(dbName);
+    })
+    .catch(err => { console.error(err) });
+
+// Route pour récupérer les résultats des élections
+app.get('/api/results', async (req, res) => {
+    try {
+        // Récupérer les candidats et leurs votes
+        const candidats = await db.collection('Candidat').find({}).toArray();
+        
+        // Formater les résultats avec les informations des candidats et leurs votes
+        const results = candidats.map(candidat => ({
+            candidate: candidat.nom,
+            votes: candidat.votes || 0  // Assurer que les votes existent, sinon 0
+        }));
+
+        res.json(results);
+    } catch (error) {
+        res.status(500).send('Erreur lors de la récupération des résultats');
+    }
+});
+
+// Route pour afficher la page de test
+app.get('/test', (req, res) => {
+    res.sendFile(__dirname + '/test.html');
+});
+
+// Route pour enregistrer un nouveau vote
+app.post('/vote/:id', async (req, res) => {
+    try {
+        const candidatId = req.params.id;
+        const userId = req.session.userId;
+
+        if (!ObjectId.isValid(candidatId)) {
+            return res.status(400).send("ID du candidat invalide");
+        }
+
+        const candidat = await db.collection("Candidat").findOne({ _id: new ObjectId(candidatId) });
+        if (!candidat) {
+            return res.status(404).send("Candidat non trouvé");
+        }
+
+        // Mettre à jour le nombre de votes du candidat
+        await db.collection("Candidat").updateOne(
+            { _id: new ObjectId(candidatId) },
+            { $inc: { votes: 1 } }
+        );
+
+        res.send("Vote enregistré avec succès !");
+    } catch (error) {
+        res.status(500).send('Erreur lors de l\'enregistrement du vote');
+    }
+});
 
 app.get('/logout', (req, res) => {
     res.clearCookie('jwt');  
     res.redirect('/login');
 });
-app.listen(4000, () => {
-  console.log("Server running on port 4000");
+
+server.listen(4000, () => {
+    console.log("Server running on port 4000");
 });

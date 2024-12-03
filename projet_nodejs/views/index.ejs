@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Socket.IO</title>
+    <script src="https://cdn.socket.io/4.5.1/socket.io.min.js"></script>
+
+</head>
+<body>
+    <h1>Test de la connexion Socket.IO</h1>
+    <div id="message"></div>
+    
+    <script>
+        // Se connecter au serveur Socket.IO
+        const socket = io('http://localhost:4000');
+        
+        // Écouter le message envoyé par le serveur
+        socket.on('message', function(data) {
+            document.getElementById('message').innerHTML = data;
+        });
+        
+        // Envoyer un message au serveur (optionnel)
+        socket.emit('message', 'Message depuis le client!');
+    </script>
+</body>
+</html>

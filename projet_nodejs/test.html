@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test des résultats des élections</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+        }
+        .candidat {
+            margin: 20px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .vote-button {
+            padding: 5px 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .vote-button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Résultats des élections</h1>
+
+    <div id="candidats-container">
+        <!-- Les candidats seront ajoutés ici dynamiquement -->
+    </div>
+
+    <script>
+        // Fonction pour récupérer et afficher les résultats
+        async function getResults() {
+            try {
+                const response = await fetch('/api/results');
+                const results = await response.json();
+                const candidatsContainer = document.getElementById('candidats-container');
+                candidatsContainer.innerHTML = ''; // Vider le contenu précédent
+                
+                results.forEach(candidat => {
+                    // Créer un élément pour chaque candidat
+                    const candidatDiv = document.createElement('div');
+                    candidatDiv.classList.add('candidat');
+                    
+                    const candidatName = document.createElement('h3');
+                    candidatName.textContent = `${candidat.candidate} - ${candidat.votes} votes`;
+                    
+                    const voteButton = document.createElement('button');
+                    voteButton.textContent = 'Voter';
+                    voteButton.classList.add('vote-button');
+                    voteButton.onclick = () => voteForCandidat(candidat._id);
+                    
+                    candidatDiv.appendChild(candidatName);
+                    candidatDiv.appendChild(voteButton);
+                    candidatsContainer.appendChild(candidatDiv);
+                });
+            } catch (error) {
+                console.error('Erreur lors de la récupération des résultats', error);
+            }
+        }
+
+        // Fonction pour voter pour un candidat
+        async function voteForCandidat(candidatId) {
+            try {
+                const response = await fetch(`/vote/${candidatId}`, {
+                    method: 'POST',
+                });
+
+                if (response.ok) {
+                    alert('Votre vote a été enregistré !');
+                    getResults(); // Actualiser les résultats après le vote
+                } else {
+                    alert('Erreur lors de l\'enregistrement du vote.');
+                }
+            } catch (error) {
+                console.error('Erreur lors de l\'enregistrement du vote', error);
+                alert('Une erreur est survenue.');
+            }
+        }
+
+        // Charger les résultats des élections au démarrage
+        getResults();
+    </script>
+
+</body>
+</html>

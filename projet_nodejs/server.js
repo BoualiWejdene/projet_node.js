@@ -46,7 +46,9 @@ const io = socketIo(server, {
 io.on('connection', (socket) => {
     console.log('Un utilisateur est connecté');  // Affichage dans la console quand un utilisateur se connecte
     socket.emit('message', 'Bonjour du serveur!');
-
+    socket.on("miseAJourVotes", () => {
+        socket.emit("resultats", candidats); // Envoyer la liste mise à jour
+    });
     socket.on('disconnect', () => {
         console.log('Un utilisateur s\'est déconnecté');
     });
@@ -68,30 +70,7 @@ app.get('/api/results', async (req, res) => {
     }
 });
 
-io.on('connection', async (socket) => {
-    console.log('Un utilisateur est connecté');
-    
-    // Émettre les résultats initiaux au client
-    socket.emit('results', await Result.find({}));
 
-    // Si un nouveau vote est enregistré, mettre à jour les résultats
-    socket.on('newVote', async (voteData) => {
-        // Ajouter ou mettre à jour les résultats du candidat
-        const result = await Result.findOneAndUpdate(
-            { candidate: voteData.candidate },
-            { $inc: { votes: voteData.votes } },
-            { new: true, upsert: true }  // Crée un nouveau document si ce n'est pas trouvé
-        );
-
-        // Émettre les résultats mis à jour à tous les clients
-        io.emit('results', await Result.find({}));
-    });
-
-    // Lors de la déconnexion d'un client
-    socket.on('disconnect', () => {
-        console.log('Un utilisateur s\'est déconnecté');
-    });
-});
 
 
 //connexion a mongodb
@@ -370,14 +349,29 @@ app.post('/vote/:id',async (req, res) => {
       // Émettre les résultats mis à jour
       const candidats = await db.collection("Candidat").find().toArray();
       io.emit('resultats', candidats);
-  
       res.redirect(`/candidat/${candidatId}`);
     } catch (err) {
       console.error("Erreur lors du vote :", err);
       res.status(500).send("Erreur serveur.");
     }
   });
-  
+  io.on("connection", (socket) => {
+    console.log("Un utilisateur est connecté");
+
+    // Envoyer la liste des candidats au client connecté
+    db.collection("Candidat")
+        .find()
+        .toArray()
+        .then((candidats) => {
+            socket.emit("resultats", candidats);
+        })
+        .catch((error) => console.error("Erreur lors de la récupération des candidats :", error));
+
+    // Gérer la déconnexion
+    socket.on("disconnect", () => {
+        console.log("Un utilisateur s'est déconnecté");
+    });
+});
 
 // Ajouter candidat à la liste des favoris 
 app.post('/favori/:id', async (req, res) => {

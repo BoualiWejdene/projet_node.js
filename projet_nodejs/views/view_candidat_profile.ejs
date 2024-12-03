@@ -102,8 +102,6 @@
         margin-left: 90px;
     }
 </style>
-
-
 <body>
 
     <% if (alertMessage) { %>
@@ -147,7 +145,7 @@
         <% }) %>
           Formulaire pour Ajouter commentaire -->
 
-         <form action="/comment/<%= candidat._id %>" method="POST">
+         <form action="/comment/<%= candidat._id %>" id="commentForm" method="POST">
             <div class="input-group mb-3">
                 <input type="text" name="contenue" id="contenue" class="form-control" placeholder="Ajouter un commentaire" style="height: 40px;margin-top: 10px;">
                 <div class="input-group-append">
@@ -157,6 +155,7 @@
                 </div>
             </div>
         </form>
+        
     </div>
      
 </div>
@@ -194,7 +193,7 @@
         alert("Une erreur est survenue. Veuillez réessayer.");
     }
 });
-
+        
     </script>
 </body>
 

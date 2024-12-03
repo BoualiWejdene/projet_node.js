@@ -133,6 +133,10 @@
     width: 240px;
 }
 
+#votes{
+    background: beige;
+    width: 400px;
+}
 </style>
 <%- include('partials/header') %>
 <body>
@@ -151,6 +155,7 @@
          <!-- Ajout du bouton de modification du profil -->
          <form action="/edit-profile/<%= user._id %>" method="GET">
             <button type="submit" class="btn btn-primary">Modifier le profil</button>
+            <button type="button" class="btn btn-primary" onclick="afficherResultat()">Afficher les résultat</button>
         </form>
   <!-- Recherche par nom ou par parti -->
   <form method="GET" action="/profile/<%= user._id %>">
@@ -190,15 +195,16 @@
               d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path>
         <path class="heart-filled" fill="red" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path>
     </svg>
-</button>
-
-    
+                </button>
                 <a href="/candidat/<%= Candidat._id %>">
                     <button type="button">Consulter</button>
                 </a>
             </div>
         <% }); %>
     </div>
+    <h3>Les résultats en temps réel</h3>
+        <div id="votes">
+        </div>
 </div>
 <script>
   const favoriteButtons = document.querySelectorAll('.favorite-btn');
@@ -249,6 +255,22 @@ function renderFavoris(favoris) {
         <div>${fav.nom_candidat} ${fav.prenom_candidat}</div>
     `).join("");
 }
+function afficherResultat(){
+    const socket = io();
+
+socket.on("resultats", (candidats) => {
+    const container = document.getElementById("votes");
+    
+    container.innerHTML = "";
+
+    candidats.forEach(c => {
+        const div = document.createElement("div");
+        div.textContent = `${c.nom_candidat} ${c.prenom_candidat}: ${c.nbVotes} votes`;
+        container.appendChild(div);
+    });
+});
+}
+
 
 
 </script>

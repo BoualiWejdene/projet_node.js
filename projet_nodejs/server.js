@@ -14,7 +14,6 @@ const app = express();
 app.set("view engine", "ejs");
 app.use(express.static('public'));
 const server = http.createServer(app);
-
 // Connexion à MongoDB
 const mongoose = require("mongoose");
 mongoose.connect('mongodb://localhost:27017/database_name')
@@ -42,17 +41,6 @@ const io = socketIo(server, {
     }
 });
 
-// Événement de connexion de Socket.IO
-io.on('connection', (socket) => {
-    console.log('Un utilisateur est connecté');  // Affichage dans la console quand un utilisateur se connecte
-    socket.emit('message', 'Bonjour du serveur!');
-    socket.on("miseAJourVotes", () => {
-        socket.emit("resultats", candidats); // Envoyer la liste mise à jour
-    });
-    socket.on('disconnect', () => {
-        console.log('Un utilisateur s\'est déconnecté');
-    });
-});
 
 // Servir un fichier HTML pour tester la connexion
 app.get('/test', (req, res) => {
@@ -69,8 +57,6 @@ app.get('/api/results', async (req, res) => {
         res.status(500).send('Erreur lors de la récupération des résultats');
     }
 });
-
-
 
 
 //connexion a mongodb
@@ -95,19 +81,7 @@ MongoClient.connect(url)
 .catch(err => {console.error(error)});
 
 app.use('/auth',auth)
-// Exemple de route pour servir la page
-// app.get('/', (req, res) => {
-//     res.sendFile(__dirname + '/index.html');  // Assurez-vous que le chemin est correct
-//   });
-  
-//   // Exemple d'écoute des connexions Socket.IO
-//   io.on('connection', (socket) => {
-//     console.log('Un utilisateur est connecté');
-  
-//     // Écoutez les événements du côté client ici...
-//   });
 
-// signup
 app.get("/register",async(req,res)=>{
     res.render("view_signup");
 })
@@ -122,41 +96,10 @@ app.get('/users',async(req,res)=>{
 // login
 app.get("/login", (req, res) => {
     res.render("login"); 
-  });
+}
+);
 
-  const jwt = require('jsonwebtoken');
-  const bcrypt = require('bcryptjs');
-  
-  app.post("/login", async (req, res) => {
-      try {
-          const { email, mot_de_passe } = req.body;
-  
-          const user = await db.collection("Utilisateurs").findOne({ email });
-          if (user == null) {
-              return res.status(400).send("Utilisateur non trouvé");
-          }
-  
-          // Vérification du mot de passe avec bcrypt
-          if (mot_de_passe!=user.mot_de_passe) {
-              return res.status(400).send("Mot de passe incorrect");
-          }
-  
-          // Créer un JWT
-          const token = jwt.sign(
-              { userId: user._id },   // Payload
-              's147Bipmf78455wkjjhhghghgggfstyftpm',     // Clé secrète
-              { expiresIn: '1h' }     // Expiration du token
-          );
-          req.session.userId = user._id;
-          // Stocker le token dans un cookie ou l'envoyer dans la réponse
-          res.cookie('jwt', token, { httpOnly: true, secure: false }); // Mettre `secure: true` en production si https
-          res.redirect(`/profile/${user._id}`);
-      } catch (err) {
-          console.error("Erreur lors de la connexion :", err);
-          res.status(500).send("Erreur serveur.");
-      }
-  });
-  
+ 
 
 // get candidats
 app.get('/candidats',authenticateJWT,async(req,res)=>{
@@ -190,12 +133,10 @@ app.get('/candidat/:id', authenticateJWT,async (req, res) => {
       const commentaires = await db.collection("Commentaire").find({ candidatId: candidatId }).toArray();
       const userIds = commentaires.map(comment => new ObjectId(comment.userId));
 
-        // Récupérer les utilisateurs associés à ces IDs
         const utilisateurs = await db.collection("Utilisateurs")
         .find({ _id: { $in: userIds } })
         .toArray();
 
-        // Associer chaque commentaire à l'utilisateur correspondant
         const commentairesAvecUtilisateurs = commentaires.map(commentaire => {
         const utilisateur = utilisateurs.find(user => user._id.toString() === commentaire.userId.toString());
         return {
@@ -243,52 +184,6 @@ app.get('/profile/:id',authenticateJWT,async (req, res) => {
 });
 
 
-// app.post('/vote/:id', async (req, res) => {
-//   try {
-//       const candidatId = req.params.id;
-//       const userId = req.session.userId;
-
-//       if (!ObjectId.isValid(candidatId)) {
-//           return res.status(400).send("ID du candidat invalide");
-//       }
-
-//       const candidat = await db.collection("Candidat").findOne({ _id: new ObjectId(candidatId) });
-//       if (!candidat) {
-//           return res.status(404).send("Candidat non trouvé");
-//       }
-
-//       const user = await db.collection("Utilisateurs").findOne({ _id: new ObjectId(userId) });
-//       if (!user) {
-//           return res.status(404).send("Utilisateur non trouvé");
-//       }
-
-  
-//       const voteExist = await db.collection("Votes").findOne({ userId: new ObjectId(userId), candidatId: new ObjectId(candidatId) });
-
-//       if (voteExist) {
-//           return res.render('view_candidat_profile', { 
-//               candidat, 
-//               user, 
-//               hasVoted: true, 
-//               alertMessage: "Vous avez déjà voté pour ce candidat." // Message d'alerte
-//           });
-//       }
-
-//       await db.collection("Votes").insertOne({ userId: new ObjectId(userId), candidatId: new ObjectId(candidatId) });
-
-      
-//       await db.collection("Candidat").updateOne(
-//           { _id: new ObjectId(candidatId) },
-//           { $inc: { nbVotes: 1 } }
-//       );
-
-//       res.redirect(`/candidat/${candidatId}`);
-//   } catch (err) {
-//       console.error("Erreur lors du vote :", err);
-//       res.status(500).send("Erreur serveur.");
-//   }
-// });
-
 app.post('/vote/:id',async (req, res) => {
     try {
       const candidatId = req.params.id;
@@ -312,8 +207,7 @@ app.post('/vote/:id',async (req, res) => {
       const userIds = commentaires.map(comment => new ObjectId(comment.userId));
 
   
-      // bch talkani zedt commentaires houni khater vote w comment yhezou lnafs lvue 
-      //donc ki yemchi lpost mta3 lvote lel vue meghir commentaires wyalkaha commentaires fel vue mahouch bch yekhdem 
+     
       const utilisateurs = await db.collection("Utilisateurs")
         .find({ _id: { $in: userIds } })
         .toArray();
@@ -358,7 +252,6 @@ app.post('/vote/:id',async (req, res) => {
   io.on("connection", (socket) => {
     console.log("Un utilisateur est connecté");
 
-    // Envoyer la liste des candidats au client connecté
     db.collection("Candidat")
         .find()
         .toArray()
@@ -367,7 +260,6 @@ app.post('/vote/:id',async (req, res) => {
         })
         .catch((error) => console.error("Erreur lors de la récupération des candidats :", error));
 
-    // Gérer la déconnexion
     socket.on("disconnect", () => {
         console.log("Un utilisateur s'est déconnecté");
     });
@@ -451,7 +343,6 @@ app.get('/edit-profile/:id', async (req, res) => {
             return res.status(404).send("Utilisateur non trouvé");
         }
 
-      // Afficher la vue de modification de profil
       res.render('view_edit_profile', { user });
     } catch (err) {
         console.error("Erreur lors de l'affichage du profil :", err);
@@ -483,48 +374,13 @@ app.post('/profile/update/:id', async (req, res) => {
             return res.status(400).send("Aucune modification effectuée.");
         }
 
-        res.redirect(`/profile/${userId}`); // Rediriger vers la page de profil mise à jour
+        res.redirect(`/profile/${userId}`); 
     } catch (err) {
         console.error("Erreur lors de la mise à jour du profil :", err);
         res.status(500).send("Erreur serveur.");
     }
 });
 
-// Résultat
-// Route pour afficher les résultats
-// app.get('/resultats', async (req, res) => {
-//     try {
-//       const candidats = await db.collection('Candidat').find().toArray();
-//       res.render('view_resultats', { candidats });
-//     } catch (err) {
-//       console.error('Erreur lors de la récupération des résultats:', err);
-//       res.status(500).send('Erreur serveur.');
-//     }
-//   });
-  
-  // Fonction pour émettre les résultats en temps réel
-//   function emitResults() {
-//     db.collection('Candidat').find().toArray()
-//       .then(candidats => {
-//         io.emit('resultats_update', { candidats }); // Envoi des résultats à tous les clients
-//       })
-//       .catch(err => console.error(err));
-//     }
-    
-    // Route pour simuler la mise à jour des résultats (par exemple, lors d'un vote)
-// app.post('/updateResults', (req, res) => {
-//     // Mettez à jour les résultats dans la base de données (exemple)
-//     db.collection('Candidat').updateOne(
-//       { _id: req.body.candidatId },
-//       { $inc: { nbVotes: 1 } } // Incrémente le nombre de votes
-//     ).then(() => {
-//       emitResults(); // Emet les résultats en temps réel
-//       res.send('Résultats mis à jour');
-//     }).catch(err => {
-//       console.error('Erreur de mise à jour des résultats:', err);
-//       res.status(500).send('Erreur serveur.');
-//     });
-//   });
 app.post('/update/:candidate', async (req, res) => {
     const candidateName = req.params.candidate;
     const candidate = await Result.findOne({ candidate: candidateName });
@@ -540,9 +396,9 @@ app.post('/update/:candidate', async (req, res) => {
   
 app.post('/comment/:id', async (req, res) => {
     try {
-        const candidatId = req.params.id; // L'ID du candidat
-        const userId = req.session.userId; // L'ID de l'utilisateur connecté
-        const contenue= req.body.contenue; // Le contenu du commentaire
+        const candidatId = req.params.id; 
+        const userId = req.session.userId; 
+        const contenue= req.body.contenue; 
 
         if (!contenue) {
             return res.status(400).json({ error: "Contenu, userId ou candidatId manquant" });
@@ -550,16 +406,15 @@ app.post('/comment/:id', async (req, res) => {
 
         const newComment = {
             contenue: contenue,
-            date_ajout: new Date(), // Date actuelle
-            nb_likes: 0, // Likes par défaut
-            nb_dislikes: 0, // Dislikes par défaut
+            date_ajout: new Date(), 
+            nb_likes: 0, 
+            nb_dislikes: 0, 
             userId: userId,
             candidatId: candidatId
         };
 
-        // Supposons que `db` est déjà configuré pour accéder à la base MongoDB
-        const commentsCollection = db.collection('Commentaire'); // Nom de la collection
-        const result = await commentsCollection.insertOne(newComment); // Insertion du commentaire
+        const commentsCollection = db.collection('Commentaire');
+        const result = await commentsCollection.insertOne(newComment);
         return res.redirect(`/candidat/${candidatId}`);
     } catch (err) {
         return res.status(500).json({

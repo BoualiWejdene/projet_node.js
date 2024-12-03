@@ -145,7 +145,7 @@
         <% }) %>
           Formulaire pour Ajouter commentaire -->
 
-         <form action="/comment/<%= candidat._id %>" id="commentForm" method="POST">
+         <form action="/comment/<%= candidat._id %>" method="POST">
             <div class="input-group mb-3">
                 <input type="text" name="contenue" id="contenue" class="form-control" placeholder="Ajouter un commentaire" style="height: 40px;margin-top: 10px;">
                 <div class="input-group-append">
@@ -160,11 +160,9 @@
      
 </div>
     <script>
-        document.getElementById('commentForm').addEventListener('submit', async (e) => {
-    e.preventDefault(); // Empêche le rechargement de la page
-
-    const candidatId = "<%= candidat._id %>"; // Assure-toi que cet ID est disponible côté client
-    const contenue = document.getElementById('contenue').value; // Récupère le contenu du commentaire
+     
+    const candidatId = "<%= candidat._id %>"; 
+    const contenue = document.getElementById('contenue').value; 
 
     try {
         const response = await fetch(`/comment/${candidatId}`, {
@@ -172,18 +170,15 @@
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ contenue }) // Envoie le contenu comme JSON
+            body: JSON.stringify({ contenue }) 
         });
 
         const result = await response.json();
         if (response.ok) {
-            // Ajoute le nouveau commentaire dans la liste
             const commentList = document.getElementById('commentList');
             const newComment = document.createElement('p');
             newComment.innerHTML = `<strong>${result.comment.userId}:</strong> ${result.comment.contenue}`;
             commentList.appendChild(newComment);
-
-            // Vide le champ d'entrée
             document.getElementById('contenue').value = '';
         } else {
             alert(result.error || "Erreur lors de l'ajout du commentaire");
@@ -192,7 +187,7 @@
         console.error("Erreur :", err);
         alert("Une erreur est survenue. Veuillez réessayer.");
     }
-});
+
         
     </script>
 </body>

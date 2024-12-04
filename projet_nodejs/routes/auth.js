@@ -77,9 +77,7 @@ router.post('/register', (req, res, next) => {
             ResiderEnTunisie,
             favoris:[]
         });
-
-        res.status(200).json({ message: 'Inscription réussie' });
-        res.redirect('/auth/login');
+        res.redirect('/login');
     } catch (error) {
         console.error('Erreur lors de l’inscription :', error);
         res.status(500).json({ message: 'Erreur serveur' });
@@ -97,7 +95,8 @@ router.post("/login", async (req, res) => {
         }
 
         // Vérification du mot de passe avec bcrypt
-        if (mot_de_passe!=user.mot_de_passe) {
+        const passwordMatch = await bcrypt.compare(mot_de_passe, user.mot_de_passe);
+        if (!passwordMatch) {
             return res.status(400).send("Mot de passe incorrect");
         }
 
@@ -116,14 +115,9 @@ router.post("/login", async (req, res) => {
         res.status(500).send("Erreur serveur.");
     }
 });
-// login
-router.get("/login", (req, res) => {
-    res.render("login"); 
-}
-);
 
 router.get('/logout', (req, res) => {
     res.clearCookie('jwt');  
-    res.redirect('/auth/login');
+    res.redirect('/login');
 });
 module.exports = router;

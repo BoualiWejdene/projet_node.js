@@ -119,7 +119,7 @@ app.use('/profile/uploads', express.static(path.join(__dirname, 'uploads')));
 
 
  // login
-app.get("/login", (req, res) => {
+ app.get("/login", (req, res) => {
     res.render("login"); 
 }
 );

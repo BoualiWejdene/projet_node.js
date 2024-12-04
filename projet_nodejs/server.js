@@ -6,6 +6,7 @@ const authenticateJWT = require("./middlewares/auth.js");
 const auth = require("./routes/auth.js");
 const cookieParser = require('cookie-parser');
 
+
 const { Server } = require('socket.io');
 
 const socketIo = require('socket.io');
@@ -58,6 +59,23 @@ app.get('/api/results', async (req, res) => {
     }
 });
 
+const multer = require('multer');
+const path = require('path');
+
+// Définir où et comment stocker les fichiers
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'uploads/'); // Répertoire de destination
+    },
+    filename: function (req, file, cb) {
+        cb(null, Date.now() + path.extname(file.originalname)); // Nom unique basé sur l'heure actuelle
+    }
+});
+
+// Créer une instance de multer avec les options de stockage
+const upload = multer({ storage: storage });
+
+app.use('/uploads', express.static('uploads'));
 
 //connexion a mongodb
 const url = 'mongodb://127.0.0.1:27017';
@@ -80,6 +98,10 @@ MongoClient.connect(url)
 })
 .catch(err => {console.error(error)});
 
+
+
+
+
 app.use('/auth',auth)
 
 app.get("/register",async(req,res)=>{
@@ -93,13 +115,14 @@ app.get('/users',async(req,res)=>{
     res.render('view_user',{utilisateurs});
 })
 
-// login
+app.use('/profile/uploads', express.static(path.join(__dirname, 'uploads')));
+
+
+ // login
 app.get("/login", (req, res) => {
     res.render("login"); 
 }
 );
-
- 
 
 // get candidats
 app.get('/candidats',authenticateJWT,async(req,res)=>{
@@ -351,14 +374,21 @@ app.get('/edit-profile/:id', async (req, res) => {
 });
 
 // Route pour mettre à jour le profil
-app.post('/profile/update/:id', async (req, res) => {
+app.post('/profile/update/:id', upload.single('photo'), async (req, res) => {
     try {
         const userId = req.params.id;
+
+        // Vérifier si une photo a été téléchargée
+        let updatedPhoto = req.body.photo;
+        if (req.file) {
+            updatedPhoto = `/uploads/${req.file.filename}`; // Utiliser le chemin relatif vers le fichier téléchargé
+        }
+
         const updatedData = {
             nom_user: req.body.nom_user,
             prenom_user: req.body.prenom_user,
             age: req.body.age,
-            photo: req.body.photo,
+            photo: updatedPhoto,  // Mettre à jour le chemin de la photo
             region: req.body.region,
             email: req.body.email,
             genre: req.body.genre,
@@ -374,12 +404,13 @@ app.post('/profile/update/:id', async (req, res) => {
             return res.status(400).send("Aucune modification effectuée.");
         }
 
-        res.redirect(`/profile/${userId}`); 
+        res.redirect(`/profile/${userId}`);
     } catch (err) {
         console.error("Erreur lors de la mise à jour du profil :", err);
         res.status(500).send("Erreur serveur.");
     }
 });
+
 
 app.post('/update/:candidate', async (req, res) => {
     const candidateName = req.params.candidate;
@@ -481,10 +512,7 @@ app.post('/vote/:id', async (req, res) => {
     }
 });
 
-app.get('/logout', (req, res) => {
-    res.clearCookie('jwt');  
-    res.redirect('/login');
-});
+
 
 server.listen(4000, () => {
     console.log("Server running on port 4000");

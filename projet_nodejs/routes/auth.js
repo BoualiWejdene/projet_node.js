@@ -3,7 +3,8 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { MongoClient } = require('mongodb');
-
+const multer = require('multer');
+const path = require('path')
 const router = express.Router();
 const url = 'mongodb://localhost:27017';
 const dbName = 'db_elections'; 
@@ -14,20 +15,44 @@ MongoClient.connect(url)
     db = client.db(dbName);
 })
 .catch(err => {console.error(error)});
+// Configuration de Multer
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, 'uploads/'); // Assurez-vous que ce dossier existe
+    },
+    filename: (req, file, cb) => {
+        const uniqueName = Date.now() + '-' + file.originalname;
+        cb(null, uniqueName);
+    }
+});
 
+const upload = multer({
+    storage: storage,
+    limits: { fileSize: 5 * 1024 * 1024 }, // Limite à 5 Mo
+    fileFilter: (req, file, cb) => {
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+        if (!allowedTypes.includes(file.mimetype)) {
+            return cb(new Error('Type de fichier non supporté. Seuls les JPEG, PNG et GIF sont autorisés.'));
+        }
+        cb(null, true);
+    }
+});
 
-// Middleware pour parser le corps de la requête
-router.use(express.json());
-router.use(express.urlencoded({ extended: true }));
-
-// Route POST pour l'inscription d'un utilisateur
-router.post('/register', async (req, res) => {
+// Middleware d'upload avec gestion des erreurs
+router.post('/register', (req, res, next) => {
+    upload.single('photo')(req, res, (err) => {
+        if (err) {
+            console.error('Erreur lors de l’upload de la photo :', err.message);
+            return res.status(400).json({ message: 'Erreur lors de l’upload de la photo : ' + err.message });
+        }
+        next();
+    });
+}, async (req, res) => {
     try {
-        
-        const usersCollection = db.collection('Utilisateurs');
+        const photoPath = req.file ? req.file.path : null;
+        console.log('Chemin de la photo uploadée :', photoPath);
 
-        const {
-            nom_user,
+        const {  nom_user,
             prenom_user,
             age,
             photo,
@@ -35,41 +60,32 @@ router.post('/register', async (req, res) => {
             email,
             mot_de_passe,
             genre,
-            ResiderEnTunisie,
-        } = req.body;
-
-        // Vérification de l'existence de l'utilisateur
-        const userExists = await usersCollection.findOne({ email });
-        if (userExists) {
-            return res.status(400).json({ message: 'Un utilisateur avec cet email existe déjà' });
-        }
-
-        // Hachage du mot de passe
-        const hashedPassword = await bcrypt.hash(mot_de_passe, 10);
-        const favoris=[];
-        const newUser = {
+            ResiderEnTunisie } = req.body;
+  // Hachage du mot de passe
+  const hashedPassword = await bcrypt.hash(mot_de_passe, 10);
+        // Exemple de stockage dans MongoDB
+        await db.collection('Utilisateurs').insertOne({
             nom_user,
             prenom_user,
             age,
             region,
-            photo,
+            photo : photoPath,
             region,
             email,
             mot_de_passe: hashedPassword, // On stocke le mot de passe haché
             genre,
             ResiderEnTunisie,
-            favoris
-        };
-        
-        // Insertion dans la collection
-        await usersCollection.insertOne(newUser);
+            favoris:[]
+        });
 
-        res.redirect("/login");
+        res.status(200).json({ message: 'Inscription réussie' });
+        res.redirect('/auth/login');
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Une erreur est survenue' });
+        console.error('Erreur lors de l’inscription :', error);
+        res.status(500).json({ message: 'Erreur serveur' });
     }
 });
+
 
 router.post("/login", async (req, res) => {
     try {
@@ -100,5 +116,14 @@ router.post("/login", async (req, res) => {
         res.status(500).send("Erreur serveur.");
     }
 });
+// login
+router.get("/login", (req, res) => {
+    res.render("login"); 
+}
+);
 
+router.get('/logout', (req, res) => {
+    res.clearCookie('jwt');  
+    res.redirect('/auth/login');
+});
 module.exports = router;

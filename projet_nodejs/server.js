@@ -5,6 +5,7 @@ const http = require("http"); // Importer le module HTTP
 const authenticateJWT = require("./middlewares/auth.js");
 const auth = require("./routes/auth.js");
 const cookieParser = require('cookie-parser');
+const bcrypt = require('bcryptjs');
 
 
 const { Server } = require('socket.io');
@@ -383,6 +384,8 @@ app.post('/profile/update/:id', upload.single('photo'), async (req, res) => {
         if (req.file) {
             updatedPhoto = `/uploads/${req.file.filename}`; // Utiliser le chemin relatif vers le fichier téléchargé
         }
+        mot_de_passe=req.body.mot_de_passe;
+        const hashedPassword = await bcrypt.hash(mot_de_passe, 10);
 
         const updatedData = {
             nom_user: req.body.nom_user,
@@ -391,6 +394,7 @@ app.post('/profile/update/:id', upload.single('photo'), async (req, res) => {
             photo: updatedPhoto,  // Mettre à jour le chemin de la photo
             region: req.body.region,
             email: req.body.email,
+            mot_de_passe:hashedPassword,
             genre: req.body.genre,
             ResiderEnTunisie: req.body.ResiderEnTunisie
         };

@@ -25,14 +25,23 @@
         <div class="form-group">
             <label for="photo">Photo :</label>
             <input type="file" class="form-control" name="photo" accept="image/*">
-            <!-- Si l'utilisateur a déjà une photo, on peut afficher l'image actuelle -->
-            <% if (user.photo) { %>
-                <div class="mt-3">
-                    <p>Photo actuelle :</p>
-                    <img src="<%= user.photo %>" alt="Photo actuelle" class="img-fluid" style="max-width: 200px;">
-                </div>
-            <% } %>
+            
+
+            <!-- Si l'utilisateur a déjà une photo, afficher l'image actuelle -->
+    <% if (user.photo) { %>
+        <div class="mt-3">
+            <p>Photo actuelle :</p>
+            <img 
+                src="<%= user.photo.startsWith('uploads') ? '/' + user.photo : user.photo %>" 
+                alt="Photo actuelle" 
+                class="img-fluid" 
+                style="max-width: 200px;"
+            >
         </div>
+    <% } %>
+
+        </div>
+
 
         <!-- Champ Région -->
         <div class="form-group">
@@ -40,24 +49,31 @@
             <input type="text" class="form-control" name="region" value="<%= user.region %>" required>
         </div>
 
+
         <!-- Champ Email -->
         <div class="form-group">
             <label for="email">Email :</label>
             <input type="email" class="form-control" name="email" value="<%= user.email %>" required>
         </div>
 
+          <!-- Champ mail -->
+  <div class="form-group">
+    <label for="password">mot de passe :</label>
+    <input type="password" class="form-control" name="mot_de_passe" value="<%= user.mot_de_passe %>" required>
+   </div>
+
         <!-- Champ Genre (Radio buttons) -->
         <div class="form-group">
             <label for="genre">Genre :</label><br>
-            <input type="radio" name="genre" value="Homme" <% if (user.genre === 'Homme') { %> checked <% } %> > Homme
-            <input type="radio" name="genre" value="Femme" <% if (user.genre === 'Femme') { %> checked <% } %> > Femme
+            <input type="radio"  name="genre" value="homme" <% if (user.genre === 'homme') { %> checked <% } %> > Homme
+            <input type="radio" name="genre" value="femme" <% if (user.genre === 'femme') { %> checked <% } %> > Femme
         </div>
 
         <!-- Champ Résidence en Tunisie (Radio buttons) -->
         <div class="form-group">
             <label for="ResiderEnTunisie">Réside en Tunisie :</label><br>
-            <input type="radio" name="ResiderEnTunisie" value="Oui" <% if (user.ResiderEnTunisie === 'Oui') { %> checked <% } %> > Oui
-            <input type="radio" name="ResiderEnTunisie" value="Non" <% if (user.ResiderEnTunisie === 'Non') { %> checked <% } %> > Non
+            <input type="radio" name="ResiderEnTunisie" value="oui" <% if (user.ResiderEnTunisie === 'oui') { %> checked <% } %> > Oui
+            <input type="radio" name="ResiderEnTunisie" value="non" <% if (user.ResiderEnTunisie === 'non') { %> checked <% } %> > Non
         </div>
 
         <!-- Bouton de soumission -->

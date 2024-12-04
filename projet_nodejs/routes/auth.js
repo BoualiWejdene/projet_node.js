@@ -96,10 +96,9 @@ router.post("/login", async (req, res) => {
 
         // Vérification du mot de passe avec bcrypt
         const passwordMatch = await bcrypt.compare(mot_de_passe, user.mot_de_passe);
-        if (!passwordMatch) {
+        if (!passwordMatch){
             return res.status(400).send("Mot de passe incorrect");
         }
-
         // Créer un JWT
         const token = jwt.sign(
             { userId: user._id },   // Payload

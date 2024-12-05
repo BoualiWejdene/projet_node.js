@@ -25,12 +25,12 @@
         max-width: 600px;
     }
     #container {
-    display: flex; /* Utilise Flexbox pour aligner les éléments horizontalement */
-    gap: 20px; /* Ajoute un espacement entre les deux sections */
-    margin-top: 20px; /* Ajoute un peu d'espace au-dessus */
+    display: flex;
+    gap: 20px; 
+    margin-top: 20px; 
   }
   #commentList {
-    flex: 1; /* Prend 2 parts de l'espace disponible */
+    flex: 1; 
     padding: 10px;
     border: 1px solid #ddd;
     border-radius: 5px;
@@ -48,11 +48,11 @@
     }
     @media (max-width: 768px) {
     #container {
-      flex-direction: column; /* Aligne verticalement les sections */
+      flex-direction: column; 
     }
 
     .candidate-container, #commentList {
-      max-width: 100%; /* Prend toute la largeur sur petits écrans */
+      max-width: 100%; 
     }
   }
     .candidate-container img {
@@ -89,13 +89,13 @@
     }
 
     .btn-success:hover {
-        background-color: #218838; /* Couleur de fond plus sombre au survol */
-        transform: scale(1.05); /* Légère animation d'agrandissement */
+        background-color: #218838; 
+        transform: scale(1.05); 
     }
 
     .btn-success:active {
-        background-color: #1e7e34; /* Couleur de fond lors du clic */
-        transform: scale(1); /* Réduction de l'effet d'agrandissement */
+        background-color: #1e7e34; 
+        transform: scale(1); 
     }
 
     .btn{
@@ -117,7 +117,6 @@
     </div>
     <% } %>
 
-    <!-- Contenu de la carte candidat -->
      <div id="container">
     <div class="candidate-container">
         <img src="<%= candidat.photo %>" alt="Photo de <%= candidat.nom_candidat %>">
@@ -138,7 +137,6 @@
         </form>
         
 
-        <!-- Bouton pour revenir au profil de l'utilisateur -->
         <button onclick="window.location.href='/profile/<%= user._id %>'" class="back-button">Retour</button>
         
       
@@ -148,10 +146,7 @@
         <% commentaires.forEach(commentaire => { %>
             <p><strong><%= commentaire.userDetails.nom_user %> <%= commentaire.userDetails.prenom_user %>:</strong> <%= commentaire.contenue %></p>
           <% }); %>
-        <!--<% commentaires.forEach(comment => { %>
-            <p><strong><%= comment.userId %>:</strong> <%= comment.contenue %></p>
-        <% }) %>
-          Formulaire pour Ajouter commentaire -->
+      
 
          <form action="/comment/<%= candidat._id %>" method="POST">
             <div class="input-group mb-3">
@@ -207,7 +202,6 @@
             });
 
             if (response.ok) {
-                // Désactiver tous les boutons
                 document.querySelectorAll('button').forEach(button => {
                     button.disabled = true;
                 });

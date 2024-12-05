@@ -110,7 +110,7 @@
 
 /* Cœur vide */
 .icon-heart .heart-filled {
-    display: none; /* Par défaut, le cœur rempli est masqué */
+    display: none; 
 }
 
 /* Cœur rempli lorsqu'il est favori */
@@ -119,7 +119,7 @@
 }
 
 .favorite-btn.active .heart-outline {
-    display: none; /* Masque le cœur vide */
+    display: none;
     
 }
 .right{
@@ -135,9 +135,9 @@
 
 .form-buttons {
     display: flex;
-    justify-content: center; /* Aligne les boutons à gauche */
-    gap: 5px; /* Réduit l'espace entre les boutons */
-    align-items: center; /* Aligne les boutons verticalement au centre */
+    justify-content: center; 
+    gap: 5px; 
+    align-items: center;
 }
 #res{
     margin-left: 250px;
@@ -160,7 +160,6 @@
         <h1><%= user.nom_user %> <%= user.prenom_user %></h1>
         <p><%= user.age %> ans</p>
 
-         <!-- Ajout du bouton de modification du profil -->
          <form action="/edit-profile/<%= user._id %>" method="GET">
             <div class="form-buttons">
                 <button type="submit" class="btn btn-primary">Modifier le profil</button>
@@ -196,16 +195,15 @@
                 <img src="<%= Candidat.photo %>" alt="Photo de <%= Candidat.nom_candidat %>">
                 <h3><%= Candidat.nom_candidat %> <%= Candidat.prenom_candidat %></h3>
                 <p><strong>Parti</strong> : <%= Candidat.parti %></p>
-                <!-- <button type="button" >Voter</button> -->
         <!-- Bouton cœur pour ajouter aux favoris -->
-    <button class="favorite-btn <%= user.favoris.includes(Candidat._id.toString()) ? 'active' : '' %>" 
-        data-id="<%= Candidat._id %>" 
-        aria-label="Ajouter aux favoris">
-    <svg class="icon-heart" viewBox="0 0 24 24" width="24" height="24">
-        <path class="heart-outline" fill="none" stroke="black" stroke-width="2"
-              d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path>
-        <path class="heart-filled" fill="red" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path>
-    </svg>
+                <button class="favorite-btn <%= user.favoris.includes(Candidat._id.toString()) ? 'active' : '' %>" 
+                    data-id="<%= Candidat._id %>" 
+                    aria-label="Ajouter aux favoris">
+                <svg class="icon-heart" viewBox="0 0 24 24" width="24" height="24">
+                    <path class="heart-outline" fill="none" stroke="black" stroke-width="2"
+                        d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path>
+                    <path class="heart-filled" fill="red" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path>
+                </svg>
                 </button>
                 <a href="/candidat/<%= Candidat._id %>">
                     <button type="button">Consulter</button>
@@ -254,7 +252,6 @@ document.querySelectorAll(".favori-btn").forEach(btn => {
         });
 
         if (response.ok) {
-            // Mettre à jour la liste des favoris dynamiquement
             const updatedFavoris = await response.json();
             renderFavoris(updatedFavoris);
         } else {

@@ -1,4 +1,3 @@
-// auth.js
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -8,7 +7,6 @@ const path = require('path')
 const router = express.Router();
 const url = 'mongodb://localhost:27017';
 const dbName = 'db_elections'; 
-const client = new MongoClient(url);
 MongoClient.connect(url)
 .then(client => {
     console.log('Connected to MongoDB');
@@ -18,7 +16,7 @@ MongoClient.connect(url)
 // Configuration de Multer
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, 'uploads/'); // Assurez-vous que ce dossier existe
+        cb(null, 'uploads/'); 
     },
     filename: (req, file, cb) => {
         const uniqueName = Date.now() + '-' + file.originalname;
@@ -28,7 +26,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({
     storage: storage,
-    limits: { fileSize: 5 * 1024 * 1024 }, // Limite à 5 Mo
+    limits: { fileSize: 5 * 1024 * 1024 }, 
     fileFilter: (req, file, cb) => {
         const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
         if (!allowedTypes.includes(file.mimetype)) {
@@ -61,9 +59,7 @@ router.post('/register', (req, res, next) => {
             mot_de_passe,
             genre,
             ResiderEnTunisie } = req.body;
-  // Hachage du mot de passe
   const hashedPassword = await bcrypt.hash(mot_de_passe, 10);
-        // Exemple de stockage dans MongoDB
         await db.collection('Utilisateurs').insertOne({
             nom_user,
             prenom_user,
@@ -72,21 +68,11 @@ router.post('/register', (req, res, next) => {
             photo : photoPath,
             region,
             email,
-            mot_de_passe: hashedPassword, // On stocke le mot de passe haché
+            mot_de_passe: hashedPassword, 
             genre,
             ResiderEnTunisie,
             favoris:[]
         });
-
-        // if (!nom_user.match(/^[A-Za-zÀ-ÿ\s]+$/)) {
-        //     return res.status(400).send('Nom invalide.');
-        // }
-        // if (!email.match(/^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/)) {
-        //     return res.status(400).send('Email invalide.');
-        // }
-        // if (age < 18 || age > 100) {
-        //     return res.status(400).send('Âge invalide.');
-        // }
     
         res.redirect('/login');
     } catch (error) {
@@ -107,20 +93,19 @@ router.post("/login", async (req, res) => {
             return res.status(400).send("Utilisateur non trouvé");
         }
 
-        // Vérification du mot de passe avec bcrypt
         const passwordMatch = await bcrypt.compare(mot_de_passe, user.mot_de_passe);
         if (!passwordMatch){
             return res.status(400).send("Mot de passe incorrect");
         }
         // Créer un JWT
         const token = jwt.sign(
-            { userId: user._id },   // Payload
-            's147Bipmf78455wkjjhhghghgggfstyftpm',     // Clé secrète
-            { expiresIn: '1h' }     // Expiration du token
+            { userId: user._id },   
+            's147Bipmf78455wkjjhhghghgggfstyftpm',    
+            { expiresIn: '1h' }   
         );
         req.session.userId = user._id;
         // Stocker le token dans un cookie ou l'envoyer dans la réponse
-        res.cookie('jwt', token, { httpOnly: true, secure: false }); // Mettre `secure: true` en production si https
+        res.cookie('jwt', token, { httpOnly: true, secure: false }); 
         res.redirect(`/profile/${user._id}`);
     } catch (err) {
         console.error("Erreur lors de la connexion :", err);

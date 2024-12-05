@@ -76,9 +76,14 @@
             <input type="radio" name="ResiderEnTunisie" value="non" <% if (user.ResiderEnTunisie === 'non') { %> checked <% } %> > Non
         </div>
 
-        <!-- Bouton de soumission -->
-        <div class="form-group text-center mt-4">
+         <!-- Bouton de soumission -->
+         <div class="form-group text-center mt-4">
             <button type="submit" class="btn btn-primary btn-lg">Mettre à jour</button>
+        
+          <!-- Bouton Annuler pour revenir au profil -->
+        <a href="/profile/<%= user._id %>" >
+            <button type="button" class="cancel-button btn btn-secondary btn-lg" >Annuler</button>
+        </a> 
         </div>
     </div>
 </form>

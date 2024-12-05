@@ -1,11 +1,10 @@
 const { MongoClient, ObjectId } = require("mongodb");
 const express = require("express");
 const session = require("express-session");
-const http = require("http"); // Importer le module HTTP
+const http = require("http"); 
 const authenticateJWT = require("./middlewares/auth.js");
 const auth = require("./routes/auth.js");
 const cookieParser = require('cookie-parser');
-const bcrypt = require('bcryptjs');
 
 
 const { Server } = require('socket.io');
@@ -120,17 +119,21 @@ app.use('/profile/uploads', express.static(path.join(__dirname, 'uploads')));
 
 
  // login
- app.get("/login", (req, res) => {
+app.get("/login", (req, res) => {
     res.render("login"); 
 }
 );
 
 // get candidats
 app.get('/candidats',authenticateJWT,async(req,res)=>{
+    const userId = req.session.userId; // Récupérer l'utilisateur connecté
+    const userVote = await Vote.findOne({ userId });
     const candidats =await db.collection('Candidat').find().toArray();
     console.log(candidats);
-    res.render('view_candidat',{candidats});
+    res.render('view_candidat',{candidats, hasVoted: !!userVote });
 })
+
+
 // get candidat by id
 app.get('/candidat/:id', authenticateJWT,async (req, res) => {
   try {
@@ -235,8 +238,8 @@ app.post('/vote/:id',async (req, res) => {
       const utilisateurs = await db.collection("Utilisateurs")
         .find({ _id: { $in: userIds } })
         .toArray();
-      const voteExist = await db.collection("Votes").findOne({userId: new ObjectId(userId), candidatId: new ObjectId(candidatId) });
-
+        const voteExist = await db.collection("Votes").findOne({ userId: new ObjectId(userId) });
+   
       const commentairesAvecUtilisateurs = commentaires.map(commentaire => {
         const utilisateur = utilisateurs.find(user => user._id.toString() === commentaire.userId.toString());
         return {
@@ -244,19 +247,18 @@ app.post('/vote/:id',async (req, res) => {
             userDetails: utilisateur ? { nom_user: utilisateur.nom_user, prenom_user: utilisateur.prenom_user } : null,
         };
         });
-      if (voteExist) {
-        return res.render('view_candidat_profile', { 
-          candidat, 
-          user, 
-          commentaires:commentairesAvecUtilisateurs,
-          hasVoted: true, 
-          alertMessage: "Vous avez déjà voté pour ce candidat." 
-        });
-      }
-  
+   
       // Enregistrer le vote
       await db.collection("Votes").insertOne({ userId: new ObjectId(userId), candidatId: new ObjectId(candidatId) });
-  
+      if (voteExist) {
+        return res.render('view_candidat_profile', { 
+            candidat, 
+            user, 
+            commentaires:commentairesAvecUtilisateurs,
+      hasVoted: true,
+            alertMessage: "Vous avez déjà voté pour un candidat." 
+        });
+    }
  
   
       await db.collection("Candidat").updateOne(
@@ -350,7 +352,7 @@ app.get('/profile/:id/favoris', async (req, res) => {
             .find({ _id: { $in: user.favoris.map(id => new ObjectId(id)) } })
             .toArray();
 
-        res.render('view_favoris', { favoris });
+        res.render('view_favoris', { favoris ,user});
     } catch (err) {
         console.error("Erreur lors de la récupération des favoris :", err);
         res.status(500).send("Erreur serveur.");
@@ -384,8 +386,6 @@ app.post('/profile/update/:id', upload.single('photo'), async (req, res) => {
         if (req.file) {
             updatedPhoto = `/uploads/${req.file.filename}`; // Utiliser le chemin relatif vers le fichier téléchargé
         }
-        mot_de_passe=req.body.mot_de_passe;
-        const hashedPassword = await bcrypt.hash(mot_de_passe, 10);
 
         const updatedData = {
             nom_user: req.body.nom_user,
@@ -394,7 +394,6 @@ app.post('/profile/update/:id', upload.single('photo'), async (req, res) => {
             photo: updatedPhoto,  // Mettre à jour le chemin de la photo
             region: req.body.region,
             email: req.body.email,
-            mot_de_passe:hashedPassword,
             genre: req.body.genre,
             ResiderEnTunisie: req.body.ResiderEnTunisie
         };
@@ -489,7 +488,6 @@ app.get('/test', (req, res) => {
     res.sendFile(__dirname + '/test.html');
 });
 
-// Route pour enregistrer un nouveau vote
 app.post('/vote/:id', async (req, res) => {
     try {
         const candidatId = req.params.id;
@@ -499,23 +497,57 @@ app.post('/vote/:id', async (req, res) => {
             return res.status(400).send("ID du candidat invalide");
         }
 
+        // Vérifier si l'utilisateur a déjà voté globalement
+        const hasVoted = await db.collection("Votes").findOne({ userId: new ObjectId(userId) });
+        if (hasVoted) {
+            const candidat = await db.collection("Candidat").findOne({ _id: new ObjectId(candidatId) });
+            const commentaires = await db.collection("Commentaire").find({ candidatId: candidatId }).toArray();
+            const userIds = commentaires.map(comment => new ObjectId(comment.userId));
+            const utilisateurs = await db.collection("Utilisateurs")
+                .find({ _id: { $in: userIds } })
+                .toArray();
+            const commentairesAvecUtilisateurs = commentaires.map(commentaire => {
+                const utilisateur = utilisateurs.find(user => user._id.toString() === commentaire.userId.toString());
+                return {
+                    ...commentaire,
+                    userDetails: utilisateur ? { nom_user: utilisateur.nom_user, prenom_user: utilisateur.prenom_user } : null,
+                };
+            });
+
+            return res.render('view_candidat_profile', { 
+                candidat, 
+                user: await db.collection("Utilisateurs").findOne({ _id: new ObjectId(userId) }),
+                commentaires: commentairesAvecUtilisateurs,
+                hasVoted: true, 
+                alertMessage: "Vous avez déjà voté pour un candidat. Vous ne pouvez pas voter à nouveau."
+            });
+        }
+
+        // Récupérer le candidat
         const candidat = await db.collection("Candidat").findOne({ _id: new ObjectId(candidatId) });
         if (!candidat) {
             return res.status(404).send("Candidat non trouvé");
         }
 
-        // Mettre à jour le nombre de votes du candidat
+        // Enregistrer le vote
+        await db.collection("Votes").insertOne({ userId: new ObjectId(userId), candidatId: new ObjectId(candidatId) });
+
+        // Mettre à jour le nombre de votes pour le candidat
         await db.collection("Candidat").updateOne(
             { _id: new ObjectId(candidatId) },
-            { $inc: { votes: 1 } }
+            { $inc: { nbVotes: 1 } }
         );
 
-        res.send("Vote enregistré avec succès !");
-    } catch (error) {
-        res.status(500).send('Erreur lors de l\'enregistrement du vote');
+        // Émettre les résultats mis à jour via Socket.IO
+        const candidats = await db.collection("Candidat").find().toArray();
+        io.emit('resultats', candidats);
+
+        res.redirect(`/candidat/${candidatId}`);
+    } catch (err) {
+        console.error("Erreur lors du vote :", err);
+        res.status(500).send("Erreur serveur.");
     }
 });
-
 
 
 server.listen(4000, () => {

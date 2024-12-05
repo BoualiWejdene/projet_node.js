@@ -77,11 +77,24 @@ router.post('/register', (req, res, next) => {
             ResiderEnTunisie,
             favoris:[]
         });
+
+        // if (!nom_user.match(/^[A-Za-zÀ-ÿ\s]+$/)) {
+        //     return res.status(400).send('Nom invalide.');
+        // }
+        // if (!email.match(/^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/)) {
+        //     return res.status(400).send('Email invalide.');
+        // }
+        // if (age < 18 || age > 100) {
+        //     return res.status(400).send('Âge invalide.');
+        // }
+    
         res.redirect('/login');
     } catch (error) {
         console.error('Erreur lors de l’inscription :', error);
         res.status(500).json({ message: 'Erreur serveur' });
     }
+
+    
 });
 
 
